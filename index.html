@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Dashboard monitoring IoT pengering gula semut kelapa - UNSOED x Central Agro Lestari">
+  <title>SugarDry IoT — Dashboard Monitoring</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app-layout">
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logos">
+        <img src="assets/Logo-Resmi-Unsoed.png" alt="Logo UNSOED" title="Universitas Jenderal Soedirman">
+        <div class="logo-divider"></div>
+        <img src="assets/cal_landscape.png" alt="Logo CAL" title="Central Agro Lestari" style="height: 28px;">
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Menu Utama</div>
+
+      <a class="nav-item active" data-page="monitoring" id="nav-monitoring">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        <span>Real-time Monitoring</span>
+      </a>
+
+      <a class="nav-item" data-page="pre-batch" id="nav-pre-batch">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        <span>Input Pre-Batch</span>
+      </a>
+
+      <a class="nav-item" data-page="post-batch" id="nav-post-batch">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/><polyline points="9 15 12 18 15 15"/>
+        </svg>
+        <span>Input Post-Batch</span>
+      </a>
+
+      <div class="nav-section-label">Pengaturan</div>
+
+      <a class="nav-item" data-page="register-machine" id="nav-register-machine">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <span>Daftar Mesin</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="connection-status">
+        <div class="status-dot" id="mqttStatus"></div>
+        <span id="mqttStatusText">MQTT Terhubung</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main-content">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <div>
+          <h1 class="header-title" id="pageTitle">Real-time Monitoring</h1>
+          <div class="header-subtitle" id="pageSubtitle">Mesin: Dryer 01 — Batch #—</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-time" id="headerClock">--:--:--</div>
+        <span class="header-badge badge-idle" id="ovenStatusBadge">
+          <span id="ovenStatusIcon">⏸</span>
+          <span id="ovenStatusText">Idle</span>
+        </span>
+      </div>
+    </header>
+
+    <!-- ===== PAGE: MONITORING ===== -->
+    <section class="page active" id="page-monitoring">
+      <!-- Batch info strip -->
+      <div class="batch-strip" id="batchStrip">
+        <div class="batch-strip-item">
+          <span class="batch-strip-label">Batch</span>
+          <span class="batch-strip-value" id="batchId">#—</span>
+        </div>
+        <div class="batch-strip-divider"></div>
+        <div class="batch-strip-item">
+          <span class="batch-strip-label">Durasi</span>
+          <span class="batch-strip-value" id="batchDuration">00:00:00</span>
+        </div>
+        <div class="batch-strip-divider"></div>
+        <div class="batch-strip-item">
+          <span class="batch-strip-label">MC Awal</span>
+          <span class="batch-strip-value" id="batchMC">—%</span>
+        </div>
+        <div class="batch-strip-divider"></div>
+        <div class="batch-strip-item">
+          <span class="batch-strip-label">Mode Blower</span>
+          <span class="batch-strip-value" id="batchMode">—</span>
+        </div>
+        <div class="batch-strip-divider"></div>
+        <div class="batch-strip-item">
+          <span class="batch-strip-label">Berat</span>
+          <span class="batch-strip-value" id="batchWeight">— kg</span>
+        </div>
+      </div>
+
+      <!-- Temperature stat cards -->
+      <div class="stats-grid">
+        <div class="stat-card zone-left">
+          <div class="stat-zone-label">R. Produk Kiri</div>
+          <div class="stat-value" id="tempLeft">--<span class="unit">°C</span></div>
+          <div class="stat-range">Target: 60 – 80°C</div>
+          <div class="stat-trend stable" id="trendLeft">
+            <span>→</span> <span>Stabil</span>
+          </div>
+        </div>
+
+        <div class="stat-card zone-right">
+          <div class="stat-zone-label">R. Produk Kanan</div>
+          <div class="stat-value" id="tempRight">--<span class="unit">°C</span></div>
+          <div class="stat-range">Target: 60 – 80°C</div>
+          <div class="stat-trend stable" id="trendRight">
+            <span>→</span> <span>Stabil</span>
+          </div>
+        </div>
+
+        <div class="stat-card zone-burner">
+          <div class="stat-zone-label">R. Pembakaran</div>
+          <div class="stat-value" id="tempBurner">--<span class="unit">°C</span></div>
+          <div class="stat-range">Target: 120 – 180°C</div>
+          <div class="stat-trend stable" id="trendBurner">
+            <span>→</span> <span>Stabil</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Temperature chart -->
+      <div class="chart-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+              Grafik Suhu Real-time
+            </div>
+            <div class="chart-controls">
+              <button class="chart-btn active" data-range="5" id="chartBtn5">5 mnt</button>
+              <button class="chart-btn" data-range="15" id="chartBtn15">15 mnt</button>
+              <button class="chart-btn" data-range="30" id="chartBtn30">30 mnt</button>
+              <button class="chart-btn" data-range="60" id="chartBtn60">1 jam</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="tempChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom widgets -->
+      <div class="widgets-grid">
+        <!-- Blower status -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.49 8.49l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.49-8.49l2.83-2.83"/>
+              </svg>
+              Status Blower
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="blower-grid">
+              <div class="blower-item">
+                <div class="blower-icon off" id="blower1Icon">🌀</div>
+                <div class="blower-label">Blower #1</div>
+                <span class="blower-status off" id="blower1Status">OFF</span>
+              </div>
+              <div class="blower-item">
+                <div class="blower-icon off" id="blower2Icon">🌀</div>
+                <div class="blower-label">Blower #2</div>
+                <span class="blower-status off" id="blower2Status">OFF</span>
+              </div>
+            </div>
+            <div class="blower-mode">
+              <span class="mode-label">Mode aktif</span>
+              <span class="mode-value" id="activeBlowerMode">—</span>
+            </div>
+            <div class="blower-mode">
+              <span class="mode-label">Duty cycle</span>
+              <span class="mode-value" id="activeDutyCycle" style="background: var(--clr-info-light); color: var(--clr-info);">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alarm log -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              Log Alarm &amp; Event
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="alarm-list" id="alarmList">
+              <div class="alarm-empty">
+                <div style="font-size:2rem; margin-bottom:8px;">✅</div>
+                Tidak ada alarm aktif
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PAGE: PRE-BATCH ===== -->
+    <section class="page" id="page-pre-batch">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 Input Data Pre-Batch</div>
+        </div>
+        <div class="card-body">
+          <div class="form-page-header">
+            <div class="form-page-title">Sebelum Memulai Pengovenan</div>
+            <div class="form-page-desc">Isi data berikut sebelum memulai proses pengeringan. Data ini akan disimpan untuk analisis performa batch.</div>
+          </div>
+
+          <form id="preBatchForm" class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="preSelectMachine">Mesin Oven <span class="required">*</span></label>
+              <select class="form-select" id="preSelectMachine" required>
+                <option value="">Pilih mesin...</option>
+                <option value="dryer01">Dryer 01</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="preOperator">Operator <span class="required">*</span></label>
+              <input class="form-input" type="text" id="preOperator" placeholder="Nama operator" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="preMCAwal">MC Awal (%) <span class="required">*</span></label>
+              <input class="form-input" type="number" id="preMCAwal" placeholder="Contoh: 3.5" step="0.1" min="0" max="100" required>
+              <span class="form-hint">Moisture Content awal dari moisture analyzer</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="preBeratAwal">Berat Awal (kg) <span class="required">*</span></label>
+              <input class="form-input" type="number" id="preBeratAwal" placeholder="Contoh: 400" step="0.1" min="0" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="preJmlKompor">Jumlah Kompor Menyala</label>
+              <select class="form-select" id="preJmlKompor">
+                <option value="1">1 Kompor</option>
+                <option value="2" selected>2 Kompor</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="preTipeGas">Tipe Gas (kg)</label>
+              <select class="form-select" id="preTipeGas">
+                <option value="3">3 kg</option>
+                <option value="5">5 kg</option>
+                <option value="12" selected>12 kg</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="preJmlTabung">Jumlah Tabung Gas</label>
+              <input class="form-input" type="number" id="preJmlTabung" placeholder="Contoh: 2" min="1" value="2">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="preModeBlower">Mode Blower <span class="required">*</span></label>
+              <select class="form-select" id="preModeBlower" required>
+                <option value="Efisien">Efisien (Otomatis)</option>
+                <option value="Turbo">Turbo (Full ON)</option>
+                <option value="Custom">Custom</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="preDurasi">Durasi Rencana (menit)</label>
+              <input class="form-input" type="number" id="preDurasi" placeholder="Contoh: 360" min="1" value="360">
+              <span class="form-hint">Estimasi durasi pengovenan dalam menit</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="preCatatan">Catatan (opsional)</label>
+              <input class="form-input" type="text" id="preCatatan" placeholder="Catatan tambahan...">
+            </div>
+
+            <div class="form-group full-width form-actions">
+              <button type="reset" class="btn btn-secondary">Reset</button>
+              <button type="submit" class="btn btn-primary" id="startBatchBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                Mulai Batch
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PAGE: POST-BATCH ===== -->
+    <section class="page" id="page-post-batch">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📊 Input Data Post-Batch</div>
+        </div>
+        <div class="card-body">
+          <div class="form-page-header">
+            <div class="form-page-title">Setelah Pengovenan Selesai</div>
+            <div class="form-page-desc">Catat hasil akhir pengeringan. Data susut dan efisiensi akan dihitung otomatis oleh sistem.</div>
+          </div>
+
+          <form id="postBatchForm" class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="postBatchSelect">Batch ID <span class="required">*</span></label>
+              <select class="form-select" id="postBatchSelect" required>
+                <option value="">Pilih batch aktif...</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="postMCAkhir">MC Akhir (%) <span class="required">*</span></label>
+              <input class="form-input" type="number" id="postMCAkhir" placeholder="Contoh: 0.8" step="0.01" min="0" max="100" required>
+              <span class="form-hint">Target: &lt; 1%</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="postBeratMesh">Berat Akhir Mesh (kg) <span class="required">*</span></label>
+              <input class="form-input" type="number" id="postBeratMesh" placeholder="Contoh: 350" step="0.1" min="0" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="postBeratBrontol">Berat Akhir Brontol (kg)</label>
+              <input class="form-input" type="number" id="postBeratBrontol" placeholder="Contoh: 30" step="0.1" min="0" value="0">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="postGasTerpakai">Estimasi Gas Terpakai (kg)</label>
+              <input class="form-input" type="number" id="postGasTerpakai" placeholder="Timbang tabung sebelum & sesudah" step="0.1" min="0">
+              <span class="form-hint">Selisih berat tabung gas</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="postCatatan">Catatan (opsional)</label>
+              <input class="form-input" type="text" id="postCatatan" placeholder="Catatan pasca pengovenan...">
+            </div>
+
+            <!-- Auto-calculated fields -->
+            <div class="form-group full-width" style="background: var(--clr-bg); padding: var(--sp-5); border-radius: var(--radius-md); margin-top: var(--sp-2);">
+              <div class="card-title" style="margin-bottom: var(--sp-4);">Kalkulasi Otomatis</div>
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-4);">
+                <div>
+                  <div class="form-hint">Total Susut (kg)</div>
+                  <div style="font-size: 1.2rem; font-weight: 700; font-family: var(--font-mono); margin-top: 4px;" id="calcSusutKg">—</div>
+                </div>
+                <div>
+                  <div class="form-hint">Susut (%)</div>
+                  <div style="font-size: 1.2rem; font-weight: 700; font-family: var(--font-mono); margin-top: 4px;" id="calcSusutPct">—</div>
+                </div>
+                <div>
+                  <div class="form-hint">Target MC Tercapai?</div>
+                  <div style="font-size: 1.2rem; font-weight: 700; font-family: var(--font-mono); margin-top: 4px;" id="calcTargetMC">—</div>
+                </div>
+                <div>
+                  <div class="form-hint">Efisiensi Score</div>
+                  <div style="font-size: 1.2rem; font-weight: 700; font-family: var(--font-mono); margin-top: 4px;" id="calcEfisiensi">—</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group full-width form-actions">
+              <button type="reset" class="btn btn-secondary">Reset</button>
+              <button type="submit" class="btn btn-success">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Simpan Hasil Batch
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PAGE: REGISTER MACHINE ===== -->
+    <section class="page" id="page-register-machine">
+      <div class="card" style="margin-bottom: var(--sp-6);">
+        <div class="card-header">
+          <div class="card-title">⚙️ Daftar Mesin Oven</div>
+          <button class="btn btn-primary" id="addMachineBtn" style="padding: var(--sp-2) var(--sp-4); font-size: 0.82rem;">
+            + Tambah Mesin
+          </button>
+        </div>
+        <div class="card-body">
+          <div class="table-wrapper">
+            <table id="machineTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nama Mesin</th>
+                  <th>Kapasitas (kg)</th>
+                  <th>Vol. R.Bakar (cm³)</th>
+                  <th>Vol. R.Produk (cm³)</th>
+                  <th>RPM Blower</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="machineTableBody">
+                <tr>
+                  <td style="font-family: var(--font-mono); font-weight: 600;">#001</td>
+                  <td>Dryer 01</td>
+                  <td>400</td>
+                  <td>45 × 110 × 60</td>
+                  <td>90 × 108.5 × 177</td>
+                  <td>2800</td>
+                  <td><span class="blower-status on">Aktif</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Register new machine form -->
+      <div class="card" id="registerMachineCard" style="display: none;">
+        <div class="card-header">
+          <div class="card-title">Registrasi Mesin Baru</div>
+        </div>
+        <div class="card-body">
+          <form id="registerMachineForm" class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="regNamaMesin">Nama Mesin <span class="required">*</span></label>
+              <input class="form-input" type="text" id="regNamaMesin" placeholder="Contoh: Dryer 02" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="regKapasitas">Kapasitas Total (kg) <span class="required">*</span></label>
+              <input class="form-input" type="number" id="regKapasitas" placeholder="Contoh: 400" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="regVolBakar">Volume R. Bakar (P×L×T cm)</label>
+              <input class="form-input" type="text" id="regVolBakar" placeholder="Contoh: 45 × 110 × 60">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="regVolProduk">Volume R. Produk (P×L×T cm)</label>
+              <input class="form-input" type="text" id="regVolProduk" placeholder="Contoh: 90 × 108.5 × 177">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="regRPM">RPM Blower</label>
+              <input class="form-input" type="number" id="regRPM" placeholder="Contoh: 2800" value="2800">
+            </div>
+
+            <div class="form-group full-width form-actions">
+              <button type="button" class="btn btn-secondary" id="cancelRegisterBtn">Batal</button>
+              <button type="submit" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Daftarkan
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
