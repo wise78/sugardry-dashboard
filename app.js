@@ -1,3 +1,140 @@
+// ============================================================
+// KONFIGURASI MQTT — GANTI SESUAI HIVEMQ CLOUD KAMU
+// ============================================================
+const MQTT_CONFIG = {
+  host: 'd068098d3ac3488d9fd5c12223ca80d8.s1.eu.hivemq.cloud:8884/mqtt',  
+  port: 8884,
+  username: 'sugardry_dashboard',              
+  password: '@Elektro123',             
+  clientId: 'dashboard_' + Math.random().toString(16).substr(2, 8)
+};
+
+const TOPIC_TELEMETRY = 'sugardry/dryer01/telemetry';
+const TOPIC_ALARM     = 'sugardry/dryer01/alarm';
+const TOPIC_COMMAND   = 'sugardry/dryer01/command';
+
+// ============================================================
+// MQTT CLIENT — pakai library mqtt.js via CDN
+// ============================================================
+let mqttClient = null;
+
+function initMQTT() {
+  const url = `wss://${MQTT_CONFIG.host}:${MQTT_CONFIG.port}/mqtt`;
+
+  mqttClient = mqtt.connect(url, {
+    username:  MQTT_CONFIG.username,
+    password:  MQTT_CONFIG.password,
+    clientId:  MQTT_CONFIG.clientId,
+    clean:     true,
+    reconnectPeriod: 3000
+  });
+
+  mqttClient.on('connect', () => {
+    console.log('✅ MQTT terhubung ke HiveMQ');
+    setMqttStatus(true);
+    mqttClient.subscribe(TOPIC_TELEMETRY);
+    mqttClient.subscribe(TOPIC_ALARM);
+  });
+
+  mqttClient.on('disconnect', () => setMqttStatus(false));
+  mqttClient.on('error', (err) => {
+    console.error('MQTT error:', err);
+    setMqttStatus(false);
+  });
+
+  mqttClient.on('message', (topic, payload) => {
+    try {
+      const data = JSON.parse(payload.toString());
+      if (topic === TOPIC_TELEMETRY) handleTelemetry(data);
+      if (topic === TOPIC_ALARM)     handleAlarm(data);
+    } catch(e) {
+      console.warn('Parse error:', e);
+    }
+  });
+}
+
+function setMqttStatus(connected) {
+  const dot  = document.getElementById('mqttStatus');
+  const text = document.getElementById('mqttStatusText');
+  if (!dot || !text) return;
+  dot.style.background  = connected ? '#22c55e' : '#ef4444';
+  text.textContent      = connected ? 'MQTT Terhubung' : 'MQTT Terputus';
+}
+
+// Terima data telemetri dari ESP32
+function handleTelemetry(data) {
+  // Update kartu suhu
+  if (data.temp_kiri  !== undefined) updateTempCard('tempLeft',   data.temp_kiri,  60, 80);
+  if (data.temp_kanan !== undefined) updateTempCard('tempRight',  data.temp_kanan, 60, 80);
+  if (data.temp_bakar !== undefined) updateTempCard('tempBurner', data.temp_bakar, 120, 180);
+
+  // Update status blower
+  updateBlower('blower1Icon', 'blower1Status', data.blower1);
+  updateBlower('blower2Icon', 'blower2Status', data.blower2);
+
+  // Update mode blower
+  if (data.mode) {
+    const modeEl = document.getElementById('activeBlowerMode');
+    const batchModeEl = document.getElementById('batchMode');
+    if (modeEl) modeEl.textContent = data.mode;
+    if (batchModeEl) batchModeEl.textContent = data.mode;
+  }
+
+  // Push ke grafik
+  if (typeof pushChartData === 'function') {
+    pushChartData(data.temp_kiri, data.temp_kanan, data.temp_bakar);
+  }
+}
+
+function updateTempCard(elId, value, min, max) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.innerHTML = value.toFixed(1) + '<span class="unit">°C</span>';
+  // Warnai merah jika di luar rentang
+  el.closest('.stat-card').style.borderColor =
+    (value < min || value > max) ? '#ef4444' : '';
+}
+
+function updateBlower(iconId, statusId, isOn) {
+  const icon   = document.getElementById(iconId);
+  const status = document.getElementById(statusId);
+  if (!icon || !status) return;
+  icon.className   = 'blower-icon ' + (isOn ? 'on' : 'off');
+  status.className = 'blower-status ' + (isOn ? 'on' : 'off');
+  status.textContent = isOn ? 'ON' : 'OFF';
+}
+
+// Terima event alarm dari ESP32
+function handleAlarm(data) {
+  const list = document.getElementById('alarmList');
+  if (!list) return;
+  const empty = list.querySelector('.alarm-empty');
+  if (empty) empty.remove();
+
+  const item = document.createElement('div');
+  item.className = 'alarm-item alarm-warn';
+  item.innerHTML = `
+    <strong>${data.alarm || 'ALARM'}</strong>
+    <span style="font-size:0.8rem; opacity:0.7">
+      ${data.temp_bakar ? 'Suhu bakar: ' + data.temp_bakar.toFixed(1) + '°C' : ''}
+      — ${new Date().toLocaleTimeString('id-ID')}
+    </span>`;
+  list.prepend(item);
+}
+
+// Kirim perintah ke ESP32 dari dashboard
+function sendCommand(payload) {
+  if (!mqttClient || !mqttClient.connected) {
+    console.warn('MQTT tidak terhubung');
+    return;
+  }
+  mqttClient.publish(TOPIC_COMMAND, JSON.stringify(payload));
+}
+
+// Panggil initMQTT saat halaman selesai load
+document.addEventListener('DOMContentLoaded', () => {
+  initMQTT();
+});
 /**
  * SugarDry IoT Dashboard — Main Application
  * Coconut Sugar Dryer monitoring system
