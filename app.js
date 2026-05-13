@@ -2,7 +2,7 @@
 // KONFIGURASI MQTT — GANTI SESUAI HIVEMQ CLOUD KAMU
 // ============================================================
 const MQTT_CONFIG = {
-  host: 'd068098d3ac3488d9fd5c12223ca80d8.s1.eu.hivemq.cloud:8884/mqtt',  
+  host: 'd068098d3ac3488d9fd5c12223ca80d8.s1.eu.hivemq.cloud',  
   port: 8884,
   username: 'sugardry_dashboard',              
   password: '@Elektro123',             
