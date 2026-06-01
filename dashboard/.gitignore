@@ -1,0 +1,10 @@
+# Local config with real credentials
+config.local.js
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.swp

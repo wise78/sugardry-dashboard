@@ -1,0 +1,52 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "machines": {
+      ".read": true,
+      ".write": true,
+      "$machineId": {
+        ".validate": "newData.hasChildren(['name', 'capacity_kg'])"
+      }
+    },
+
+    "operators": {
+      ".read": true,
+      ".write": true
+    },
+
+    "batches": {
+      ".read": true,
+      ".write": true,
+      "$batchId": {
+        ".validate": "newData.hasChildren(['machine_id', 'start_time', 'status'])",
+        "pre_batch": {
+          ".validate": "newData.hasChildren(['mc_awal', 'mode_blower'])"
+        }
+      },
+      ".indexOn": ["start_time", "status", "pre_batch/mode_blower"]
+    },
+
+    "telemetry": {
+      ".read": true,
+      ".write": true,
+      "$machineId": {
+        "latest": {
+          ".validate": "newData.hasChildren(['timestamp'])"
+        }
+      }
+    },
+
+    "alarms": {
+      ".read": true,
+      ".write": true,
+      "$machineId": {
+        "$alarmId": {
+          ".validate": "newData.hasChildren(['type', 'timestamp'])"
+        }
+      },
+      ".indexOn": ["timestamp"]
+    }
+  }
+}

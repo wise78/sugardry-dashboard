@@ -1,0 +1,48 @@
+# ========================================
+# SugarDry Project - .gitignore
+# ========================================
+
+# --- Local config with credentials ---
+config.local.js
+*.env
+.env.*
+
+# --- OS generated files ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- Editor / IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+*.pkl
+*.h5
+*.model
+
+# --- Node ---
+node_modules/
+
+# --- Large binary files (keep docs separate) ---
+*.docx
+*.pdf
+*.xlsx
+*.zip
+*.rar
+
+# --- Temporary files ---
+*.tmp
+*.log
+*.bak
+
+# --- Gemini/AI tool files ---
+.gemini/
