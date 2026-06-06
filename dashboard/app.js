@@ -1402,12 +1402,15 @@ function tsLog(type, message) {
  * Toggle individual output (SSR1, SSR2, Alarm)
  */
 function troubleshootToggle(device, turnOn) {
-  // Safety: warn if batch is active
-  if (state.batchActive) {
-    if (!confirm('⚠️ Batch sedang aktif! Yakin ingin mengontrol output manual?')) return;
-  }
+  try {
+    // Safety: warn if batch is active — use toast instead of confirm() (mobile-safe)
+    if (state.batchActive) {
+      addAlarm('warning', `⚠️ Kontrol manual [${device.toUpperCase()}] saat batch aktif!`);
+      showToast('⚠️ Hati-hati: batch sedang aktif!', '⚠️');
+      // Continue anyway — operator needs to be able to stop things
+    }
 
-  tsState[device] = turnOn;
+    tsState[device] = turnOn;
 
   // Map device to MQTT topic
   const topicMap = {
@@ -1449,15 +1452,21 @@ function troubleshootToggle(device, turnOn) {
     tsLog('warning', `${nameMap[device]} → ${statusText} (MQTT offline — command queued)`);
   }
 
-  showToast(`${nameMap[device]}: ${statusText}`, turnOn ? '✅' : '🔴');
+    showToast(`${nameMap[device]}: ${statusText}`, turnOn ? '✅' : '🔴');
+  } catch (err) {
+    console.error('[troubleshootToggle] Error:', err);
+    showToast('❌ Error: ' + err.message, '❌');
+  }
 }
 
 /**
  * Toggle all outputs simultaneously
  */
 function troubleshootToggleAll(turnOn) {
+  // Warn via toast instead of confirm (mobile-safe)
   if (state.batchActive) {
-    if (!confirm('⚠️ Batch sedang aktif! Yakin ingin mengontrol SEMUA output?')) return;
+    addAlarm('warning', '⚠️ Semua output dikontrol manual saat batch aktif!');
+    showToast('⚠️ Batch aktif — kontrol manual dijalankan', '⚠️');
   }
 
   troubleshootToggle('ssr1', turnOn);
@@ -1485,25 +1494,30 @@ function updateAllStatus() {
  * Execute quick diagnostic actions
  */
 function troubleshootAction(action) {
-  const actionMap = {
-    'ping': { topic: 'oven/troubleshoot/command', payload: 'PING', label: 'Ping ESP32' },
-    'restart': { topic: 'oven/troubleshoot/command', payload: 'RESTART', label: 'Restart ESP32' },
-    'read-sensors': { topic: 'oven/troubleshoot/command', payload: 'READ_SENSORS', label: 'Baca semua sensor' },
-    'status': { topic: 'oven/troubleshoot/command', payload: 'STATUS', label: 'Request status lengkap' },
-  };
+  try {
+    const actionMap = {
+      'ping': { topic: 'oven/troubleshoot/command', payload: 'PING', label: 'Ping ESP32' },
+      'restart': { topic: 'oven/troubleshoot/command', payload: 'RESTART', label: 'Restart ESP32' },
+      'read-sensors': { topic: 'oven/troubleshoot/command', payload: 'READ_SENSORS', label: 'Baca semua sensor' },
+      'status': { topic: 'oven/troubleshoot/command', payload: 'STATUS', label: 'Request status lengkap' },
+    };
 
-  const cmd = actionMap[action];
-  if (!cmd) return;
+    const cmd = actionMap[action];
+    if (!cmd) return;
 
-  if (action === 'restart') {
-    if (!confirm('⚠️ Yakin ingin restart ESP32? Semua output akan di-reset.')) return;
-  }
+    // Use toast warning instead of confirm() for mobile compatibility
+    if (action === 'restart') {
+      showToast('🔄 Restart ESP32 dikirim...', '⚠️');
+    }
 
-  const sent = MQTTService.publish(cmd.topic, cmd.payload);
-  if (sent) {
-    tsLog('info', `Perintah dikirim: ${cmd.label}`);
-  } else {
-    tsLog('error', `Gagal mengirim: ${cmd.label} — MQTT tidak terhubung`);
+    const sent = MQTTService.publish(cmd.topic, cmd.payload);
+    if (sent) {
+      tsLog('info', `Perintah dikirim: ${cmd.label}`);
+    } else {
+      tsLog('error', `Gagal mengirim: ${cmd.label} — MQTT tidak terhubung`);
+    }
+  } catch (err) {
+    console.error('[troubleshootAction] Error:', err);
   }
 }
 
