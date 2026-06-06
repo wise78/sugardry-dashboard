@@ -117,7 +117,8 @@ body {
   left: 0;
   bottom: 0;
   z-index: 100;
-  transition: transform var(--transition-base);
+  /* Include visibility in transition so it still slides smoothly on mobile */
+  transition: transform var(--transition-base), visibility var(--transition-base);
 }
 
 .sidebar-header {
@@ -954,10 +955,19 @@ tbody tr:last-child td {
 .form-select {
   min-height: 44px; /* iOS recommended tap target */
   font-size: 16px;  /* Prevents iOS auto-zoom on focus */
+  touch-action: manipulation; /* Remove tap delay on mobile */
 }
 
-.btn {
+.btn,
+.nav-item,
+.mob-nav-item,
+.chart-btn,
+.ts-btn,
+.ts-quick-btn {
   min-height: 44px;
+  touch-action: manipulation; /* Remove 300ms tap delay on all browsers */
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.05); /* Subtle tap feedback */
+  cursor: pointer;
 }
 
 /* ===== TABLET (≤1024px) ===== */
@@ -1337,13 +1347,17 @@ tbody tr:last-child td {
     transform: translateX(-100%);
     width: min(280px, 85vw);
     z-index: 200;
-    pointer-events: none; /* CRITICAL: sidebar off-screen should not block touches */
+    /* Use visibility:hidden — most reliable way to remove from touch event flow
+       pointer-events:none alone is NOT honored on all Android/iOS browsers */
+    visibility: hidden;
+    pointer-events: none;
   }
 
   .sidebar.open {
     transform: translateX(0);
     box-shadow: 4px 0 32px rgba(0,0,0,0.18);
-    pointer-events: auto; /* Re-enable touch when sidebar is open */
+    visibility: visible; /* Restore full interactivity when open */
+    pointer-events: auto;
   }
 
   .sidebar-overlay {
