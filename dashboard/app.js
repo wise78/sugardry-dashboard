@@ -1260,37 +1260,74 @@ async function loadBatchHistory() {
       return;
     }
 
-    let html = `<div class="table-wrapper"><table>
-      <thead><tr>
-        <th>Batch ID</th><th>Operator</th><th>Mulai</th>
-        <th>MC Awal</th><th>Mode</th><th>Berat (kg)</th>
-        <th>MC Akhir</th><th>Susut (%)</th><th>Status</th>
-      </tr></thead><tbody>`;
+    // Mobile: use card layout; Desktop: use table
+    const isMobile = window.innerWidth < 640;
 
-    batches.forEach((b) => {
-      const startDate = b.start_time
-        ? new Date(b.start_time).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })
-        : '—';
-      const pre = b.pre_batch || {};
-      const sum = b.summary || {};
-      const statusClass = b.status === 'completed' ? 'on' : b.status === 'active' ? 'on' : 'off';
-      const statusLabel = b.status === 'completed' ? 'Selesai' : b.status === 'active' ? 'Aktif' : b.status;
+    if (isMobile) {
+      // Mobile card layout — much easier to read on small screens
+      let html = '<div style="display:flex;flex-direction:column;gap:12px;">';
+      batches.forEach((b) => {
+        const startDate = b.start_time
+          ? new Date(b.start_time).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })
+          : '—';
+        const pre = b.pre_batch || {};
+        const sum = b.summary || {};
+        const statusClass = b.status === 'completed' ? 'on' : b.status === 'active' ? 'on' : 'off';
+        const statusLabel = b.status === 'completed' ? 'Selesai' : b.status === 'active' ? 'Aktif' : b.status;
 
-      html += `<tr>
-        <td style="font-family:var(--font-mono);font-weight:600;">#${b.id}</td>
-        <td>${b.operator_name || '—'}</td>
-        <td>${startDate}</td>
-        <td>${pre.mc_awal != null ? pre.mc_awal + '%' : '—'}</td>
-        <td>${pre.mode_blower || '—'}</td>
-        <td>${pre.berat_awal_kg || '—'}</td>
-        <td>${sum.target_mc_tercapai != null ? (b.post_batch?.mc_akhir + '%') : '—'}</td>
-        <td>${sum.susut_persen != null ? sum.susut_persen.toFixed(1) + '%' : '—'}</td>
-        <td><span class="blower-status ${statusClass}">${statusLabel}</span></td>
-      </tr>`;
-    });
+        html += `
+          <div style="background:var(--clr-bg);border-radius:var(--radius-md);padding:14px;border:1px solid var(--clr-border);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <span style="font-family:var(--font-mono);font-weight:700;font-size:0.95rem;color:var(--clr-text);">#${b.id}</span>
+              <span class="blower-status ${statusClass}">${statusLabel}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.8rem;">
+              <div><span style="color:var(--clr-text-muted);display:block;">Operator</span><strong>${b.operator_name || '—'}</strong></div>
+              <div><span style="color:var(--clr-text-muted);display:block;">Mulai</span><strong>${startDate}</strong></div>
+              <div><span style="color:var(--clr-text-muted);display:block;">MC Awal</span><strong>${pre.mc_awal != null ? pre.mc_awal + '%' : '—'}</strong></div>
+              <div><span style="color:var(--clr-text-muted);display:block;">Mode Blower</span><strong>${pre.mode_blower || '—'}</strong></div>
+              <div><span style="color:var(--clr-text-muted);display:block;">Berat Awal</span><strong>${pre.berat_awal_kg ? pre.berat_awal_kg + ' kg' : '—'}</strong></div>
+              <div><span style="color:var(--clr-text-muted);display:block;">MC Akhir</span><strong>${sum.target_mc_tercapai != null ? (b.post_batch?.mc_akhir + '%') : '—'}</strong></div>
+              <div><span style="color:var(--clr-text-muted);display:block;">Susut</span><strong>${sum.susut_persen != null ? sum.susut_persen.toFixed(1) + '%' : '—'}</strong></div>
+            </div>
+          </div>`;
+      });
+      html += '</div>';
+      container.innerHTML = html;
+    } else {
+      // Desktop: normal table
+      let html = `<div class="table-wrapper"><table>
+        <thead><tr>
+          <th>Batch ID</th><th>Operator</th><th>Mulai</th>
+          <th>MC Awal</th><th>Mode</th><th>Berat (kg)</th>
+          <th>MC Akhir</th><th>Susut (%)</th><th>Status</th>
+        </tr></thead><tbody>`;
 
-    html += '</tbody></table></div>';
-    container.innerHTML = html;
+      batches.forEach((b) => {
+        const startDate = b.start_time
+          ? new Date(b.start_time).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })
+          : '—';
+        const pre = b.pre_batch || {};
+        const sum = b.summary || {};
+        const statusClass = b.status === 'completed' ? 'on' : b.status === 'active' ? 'on' : 'off';
+        const statusLabel = b.status === 'completed' ? 'Selesai' : b.status === 'active' ? 'Aktif' : b.status;
+
+        html += `<tr>
+          <td style="font-family:var(--font-mono);font-weight:600;">#${b.id}</td>
+          <td>${b.operator_name || '—'}</td>
+          <td>${startDate}</td>
+          <td>${pre.mc_awal != null ? pre.mc_awal + '%' : '—'}</td>
+          <td>${pre.mode_blower || '—'}</td>
+          <td>${pre.berat_awal_kg || '—'}</td>
+          <td>${sum.target_mc_tercapai != null ? (b.post_batch?.mc_akhir + '%') : '—'}</td>
+          <td>${sum.susut_persen != null ? sum.susut_persen.toFixed(1) + '%' : '—'}</td>
+          <td><span class="blower-status ${statusClass}">${statusLabel}</span></td>
+        </tr>`;
+      });
+
+      html += '</tbody></table></div>';
+      container.innerHTML = html;
+    }
   } catch (err) {
     console.error('❌ Load batch history error:', err);
     container.innerHTML = `<div class="alarm-empty"><div style="font-size:2rem;">❌</div>Gagal memuat data</div>`;
@@ -1554,6 +1591,50 @@ function initMobileNav() {
   });
 }
 
+/**
+ * Initialize swipe-to-open sidebar gesture for mobile
+ * Swipe right from the left edge (≤40px) to open, swipe left to close
+ */
+function initTouchSwipe() {
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchMoved = false;
+  const EDGE_THRESHOLD = 40;   // px from left edge to trigger open
+  const SWIPE_DISTANCE = 60;   // minimum horizontal swipe distance
+
+  document.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    touchMoved = false;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', () => {
+    touchMoved = true;
+  }, { passive: true });
+
+  document.addEventListener('touchend', (e) => {
+    if (!touchMoved) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    const isHorizontal = Math.abs(dx) > Math.abs(dy) * 1.5;
+    if (!isHorizontal) return;
+
+    const sidebar = $('#sidebar');
+    const overlay = $('#sidebarOverlay');
+
+    // Swipe RIGHT from left edge → open sidebar
+    if (dx > SWIPE_DISTANCE && touchStartX <= EDGE_THRESHOLD) {
+      sidebar.classList.add('open');
+      overlay.classList.add('active');
+    }
+    // Swipe LEFT anywhere → close sidebar if open
+    if (dx < -SWIPE_DISTANCE && sidebar.classList.contains('open')) {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('active');
+    }
+  }, { passive: true });
+}
+
 // ===== INIT =====
 function init() {
   initNavigation();
@@ -1563,6 +1644,7 @@ function init() {
   updateClock();
 
   initMobileNav();
+  initTouchSwipe();  // swipe gesture for sidebar
   initTroubleshoot();
 
   // Initialize services

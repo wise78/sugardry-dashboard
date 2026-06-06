@@ -946,6 +946,19 @@ tbody tr:last-child td {
 }
 
 /* ===== RESPONSIVE ===== */
+
+/* Touch-friendly base enhancements (applies at all sizes) */
+.form-input,
+.form-select {
+  min-height: 44px; /* iOS recommended tap target */
+  font-size: 16px;  /* Prevents iOS auto-zoom on focus */
+}
+
+.btn {
+  min-height: 44px;
+}
+
+/* ===== TABLET (≤1024px) ===== */
 @media (max-width: 1024px) {
   .stats-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -954,52 +967,9 @@ tbody tr:last-child td {
   .widgets-grid {
     grid-template-columns: 1fr;
   }
-}
 
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
-  .sidebar-overlay {
-    display: block;
-  }
-
-  .main-content {
-    margin-left: 0;
-  }
-
-  .mobile-menu-btn {
-    display: flex;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .header {
-    padding: 0 var(--sp-4);
-  }
-
-  .page {
-    padding: var(--sp-4);
-  }
-
-  .batch-strip {
-    flex-wrap: wrap;
-    gap: var(--sp-3);
-  }
-
-  .chart-container {
-    height: 260px;
+  .ts-controls-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -1358,24 +1328,210 @@ tbody tr:last-child td {
   transform: scale(0.92);
 }
 
-/* ===== IMPROVED RESPONSIVE ===== */
+/* ===== MOBILE (≤768px) ===== */
 @media (max-width: 768px) {
+  /* --- Sidebar & Layout --- */
+  .sidebar {
+    transform: translateX(-100%);
+    width: min(280px, 85vw);
+    z-index: 200;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 32px rgba(0,0,0,0.18);
+  }
+
+  .sidebar-overlay {
+    display: block;
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+    min-height: 44px;
+    min-width: 44px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* --- Bottom Nav --- */
   .mobile-bottom-nav {
     display: flex;
     justify-content: space-around;
     align-items: center;
+    padding-bottom: max(var(--sp-2), env(safe-area-inset-bottom));
   }
 
+  .mob-nav-item {
+    min-height: 52px;
+    padding: var(--sp-2) var(--sp-2);
+    flex: 1;
+    justify-content: center;
+  }
+
+  /* Body accounts for bottom nav + safe-area */
   body {
-    padding-bottom: 68px;
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
   }
 
+  /* --- Header --- */
+  .header {
+    padding: 0 var(--sp-4);
+    height: 56px;
+  }
+
+  .header-time {
+    display: none;
+  }
+
+  .header-badge {
+    font-size: 0.7rem;
+    padding: var(--sp-1) var(--sp-2);
+  }
+
+  /* --- Page container --- */
+  .page {
+    padding: var(--sp-4);
+  }
+
+  /* --- Batch Strip --- */
+  .batch-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-2) var(--sp-3);
+    padding: var(--sp-3) var(--sp-4);
+    overflow-x: hidden;
+  }
+
+  .batch-strip-divider {
+    display: none;
+  }
+
+  .batch-strip-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .batch-strip-label {
+    font-size: 0.68rem;
+  }
+
+  .batch-strip-value {
+    font-size: 0.8rem;
+  }
+
+  /* --- Stats Cards --- */
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-3);
+  }
+
+  .stat-value {
+    font-size: 1.7rem;
+  }
+
+  .stat-card:last-child {
+    grid-column: 1 / -1;
+  }
+
+  /* --- Chart --- */
+  .chart-container {
+    height: 240px;
+  }
+
+  .chart-controls {
+    gap: var(--sp-1);
+    flex-wrap: wrap;
+  }
+
+  .chart-btn {
+    padding: var(--sp-1) var(--sp-2);
+    font-size: 0.72rem;
+    min-height: 32px;
+  }
+
+  /* --- Widgets (Blower + Alarm) --- */
+  .widgets-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .blower-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .alarm-list {
+    max-height: 200px;
+  }
+
+  /* --- Forms --- */
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-group.full-width {
+    grid-column: 1;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: var(--sp-2);
+  }
+
+  .form-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Post-batch auto calc grid */
+  #page-post-batch [style*="grid-template-columns: repeat(4"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* --- Buttons --- */
+  .btn {
+    min-height: 46px;
+  }
+
+  /* --- Cards --- */
+  .card-header {
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    padding: var(--sp-4) var(--sp-4);
+  }
+
+  .card-body {
+    padding: var(--sp-4);
+  }
+
+  /* --- Table (machine + batch history) --- */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-md);
+  }
+
+  table {
+    min-width: 560px; /* forces horizontal scroll rather than squish */
+  }
+
+  /* --- Troubleshoot page --- */
   .ts-controls-grid {
     grid-template-columns: 1fr;
+    gap: var(--sp-4);
   }
 
   .ts-sensor-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-3);
+  }
+
+  .ts-sensor-card:last-child {
+    grid-column: 1 / -1;
   }
 
   .ts-diagnostics-grid {
@@ -1385,90 +1541,146 @@ tbody tr:last-child td {
   .ts-quick-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    gap: var(--sp-2);
   }
 
-  .batch-strip-divider {
-    display: none;
+  .ts-quick-btn {
+    min-height: 46px !important;
+    text-align: center;
+    justify-content: center;
   }
 
-  .batch-strip {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--sp-3);
-    padding: var(--sp-3) var(--sp-4);
+  .ts-warning-banner {
+    padding: var(--sp-4);
+    margin-bottom: var(--sp-4);
   }
 
-  .header-time {
-    display: none;
+  .ts-control-actions {
+    gap: var(--sp-2);
   }
 
-  .stat-value {
-    font-size: 1.8rem;
+  .ts-btn {
+    min-height: 44px !important;
+  }
+
+  .ts-log-container {
+    max-height: 160px;
+  }
+
+  /* --- Toast --- */
+  .toast-container {
+    left: var(--sp-3);
+    right: var(--sp-3);
+    top: auto;
+    bottom: calc(72px + env(safe-area-inset-bottom));
   }
 
   .toast {
-    min-width: auto;
-    margin: 0 var(--sp-4);
-  }
-
-  .toast-container {
-    left: 0;
-    right: 0;
-    top: auto;
-    bottom: 76px;
-  }
-
-  /* Post-batch auto calc grid */
-  #page-post-batch [style*="grid-template-columns: repeat(4"] {
-    grid-template-columns: repeat(2, 1fr) !important;
+    min-width: 0;
+    width: 100%;
+    font-size: 0.82rem;
   }
 }
 
+/* ===== SMALL MOBILE (≤480px) ===== */
 @media (max-width: 480px) {
   html {
     font-size: 13px;
   }
 
+  /* --- Header --- */
+  .header {
+    height: 52px;
+  }
+
   .header-title {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .header-subtitle {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
   }
 
+  /* --- Batch strip: 2 cols on very small --- */
   .batch-strip {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .stat-value {
-    font-size: 1.5rem;
+  /* Make last batch-strip item span full width on 2-col */
+  .batch-strip-countdown {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--clr-border-light);
+    padding-top: var(--sp-2);
+    margin-top: var(--sp-1);
   }
 
+  /* --- Stats: single column --- */
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card:last-child {
+    grid-column: 1;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+  }
+
+  /* --- Chart --- */
   .chart-container {
-    height: 220px;
+    height: 200px;
+  }
+
+  /* --- Card spacing --- */
+  .card-body {
+    padding: var(--sp-3);
+  }
+
+  .card-header {
+    padding: var(--sp-3) var(--sp-3);
+  }
+
+  /* --- Troubleshoot --- */
+  .ts-sensor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ts-sensor-card:last-child {
+    grid-column: 1;
   }
 
   .ts-sensor-temp {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
   }
 
   .ts-control-icon {
-    width: 36px;
-    height: 36px;
-    font-size: 1rem;
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
   }
 
   .ts-quick-actions {
     grid-template-columns: 1fr;
   }
 
-  .card-body {
-    padding: var(--sp-4);
+  .ts-quick-btn {
+    width: 100% !important;
   }
 
-  .card-header {
-    padding: var(--sp-4);
+  /* --- Page padding --- */
+  .page {
+    padding: var(--sp-3);
+  }
+
+  /* --- Bottom nav items tighter --- */
+  .mob-nav-item {
+    font-size: 0.58rem;
+  }
+
+  .mob-nav-item svg {
+    width: 20px;
+    height: 20px;
   }
 }
 
