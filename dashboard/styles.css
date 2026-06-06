@@ -939,13 +939,15 @@ tbody tr:last-child td {
   background: rgba(0, 0, 0, 0.4);
   z-index: 99;
   opacity: 0;
-  pointer-events: none; /* CRITICAL: don't block taps when sidebar is closed */
+  pointer-events: none;
   transition: opacity var(--transition-base);
 }
 
+/* Only show overlay when sidebar is actually open */
 .sidebar-overlay.active {
+  display: block;        /* explicitly set display here */
   opacity: 1;
-  pointer-events: auto; /* Only intercept taps when overlay is visible */
+  pointer-events: auto;
 }
 
 /* ===== RESPONSIVE ===== */
@@ -1360,9 +1362,11 @@ tbody tr:last-child td {
     pointer-events: auto;
   }
 
-  .sidebar-overlay {
-    display: block;
-  }
+  /* sidebar-overlay: do NOT force display:block here!
+     It must stay display:none until sidebar opens.
+     A display:block fixed element covering inset:0 blocks ALL touches
+     on content below z-index:99 — even with pointer-events:none.
+     The .active class handles showing it when needed. */
 
   .main-content {
     margin-left: 0;
