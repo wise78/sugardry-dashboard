@@ -26,6 +26,8 @@ const state = {
   blowerForceOff: false, // manual override: prevent simulation from turning blowers back ON
   blowerMode: '—',
   dutyCycle: '—',
+  blowerOnMnt: 30,   // duty ON dalam menit (untuk simulasi Custom & Efisien)
+  blowerOffMnt: 10,  // duty OFF dalam menit
   alarms: [],
   chartRange: 5, // minutes
   tempHistory: [], // { time, left, right, burner }
@@ -658,17 +660,27 @@ function initForms() {
     state.blower1 = true;
     state.blower2 = true;
 
-    // Set duty cycle based on mode
+    // Set duty cycle based on mode — simpan juga nilai numerik untuk simulasi
     if (mode === 'Turbo') {
       state.dutyCycle = 'ON 100%';
+      state.blowerOnMnt  = null; // always ON, no cycling
+      state.blowerOffMnt = null;
     } else if (mode === 'Efisien') {
-      if (mc < 2) state.dutyCycle = 'ON 20 / OFF 10';
-      else if (mc <= 3) state.dutyCycle = 'ON 25 / OFF 10';
-      else state.dutyCycle = 'ON 30 / OFF 10';
+      let onMnt;
+      if (mc < 2)       { onMnt = 20; }
+      else if (mc <= 3) { onMnt = 25; }
+      else              { onMnt = 30; }
+      state.blowerOnMnt  = onMnt;
+      state.blowerOffMnt = 10;
+      state.dutyCycle = `ON ${onMnt} / OFF 10`;
     } else if (mode === 'Custom') {
+      state.blowerOnMnt  = customOn;
+      state.blowerOffMnt = customOff;
       state.dutyCycle = `ON ${customOn} / OFF ${customOff}`;
     } else {
-      state.dutyCycle = '—';
+      state.dutyCycle    = '—';
+      state.blowerOnMnt  = 30;
+      state.blowerOffMnt = 10;
     }
 
     // Update UI
@@ -717,6 +729,9 @@ function initForms() {
       blowerOnTotal: null, blowerSiklus: null,
       dutyOnMnt: null, dutyOffMnt: null, mode: null,
     };
+    // Reset blower simulation cycle untuk batch baru
+    blowerCycleTimer = 0;
+    blowerPhase = 'on';
 
 
     // Set estimated end time for countdown
@@ -911,40 +926,49 @@ function calculatePostBatch() {
 }
 
 // ===== BLOWER SIMULATION =====
-// Simulates blower cycling in Efisien mode
+// Simulates blower duty cycling in Efisien & Custom mode.
+// Tick runs every 2 seconds → 1 menit = 30 ticks.
 let blowerCycleTimer = 0;
 let blowerPhase = 'on'; // 'on' or 'off'
-const BLOWER_ON_DURATION = 30; // seconds (scaled from 30 minutes for demo)
-const BLOWER_OFF_DURATION = 10; // seconds (scaled from 10 minutes for demo)
 
 function updateBlowerSimulation() {
   if (!state.batchActive) return;
 
-  // If operator manually forced blowers OFF (e.g. from batch complete popup), don't override
+  // Manual override: blower paksa OFF, jangan dikembalikan
   if (state.blowerForceOff) return;
 
+  // Turbo mode: selalu ON, tidak ada cycling
   if (state.blowerMode === 'Turbo') {
     state.blower1 = true;
     state.blower2 = true;
     return;
   }
 
-  if (state.blowerMode === 'Efisien') {
-    blowerCycleTimer++;
-    const maxTime = blowerPhase === 'on' ? BLOWER_ON_DURATION : BLOWER_OFF_DURATION;
+  // Efisien & Custom: keduanya pakai nilai blowerOnMnt / blowerOffMnt dari state
+  const TICKS_PER_MINUTE = 30; // 1 tick = 2 detik → 30 ticks = 60 detik = 1 menit
+  const onMnt  = state.blowerOnMnt  || 30;
+  const offMnt = state.blowerOffMnt || 10;
+  const maxTicks = blowerPhase === 'on'
+    ? onMnt  * TICKS_PER_MINUTE
+    : offMnt * TICKS_PER_MINUTE;
 
-    if (blowerCycleTimer >= maxTime) {
+  if (state.blowerMode === 'Efisien' || state.blowerMode === 'Custom') {
+    blowerCycleTimer++;
+
+    if (blowerCycleTimer >= maxTicks) {
       blowerCycleTimer = 0;
       if (blowerPhase === 'on') {
         blowerPhase = 'off';
         state.blower1 = false;
         state.blower2 = false;
-        addAlarm('info', 'Blower OFF — fase pendinginan');
+        addAlarm('info',
+          `🌀 Blower OFF — fase pendinginan [${state.blowerMode}] (ON ${onMnt} mnt → OFF ${offMnt} mnt)`);
       } else {
         blowerPhase = 'on';
         state.blower1 = true;
         state.blower2 = true;
-        addAlarm('info', 'Blower ON — fase pengeringan');
+        addAlarm('info',
+          `🌀 Blower ON — fase pengeringan [${state.blowerMode}] (ON ${onMnt} mnt / OFF ${offMnt} mnt)`);
       }
     }
   }
