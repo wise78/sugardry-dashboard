@@ -1344,29 +1344,34 @@ tbody tr:last-child td {
 
 /* ===== MOBILE (≤768px) ===== */
 @media (max-width: 768px) {
-  /* --- Sidebar & Layout --- */
+  /* --- Sidebar: completely hide when closed, show when open --- */
   .sidebar {
-    transform: translateX(-100%);
+    /* display:none is the ONLY way to guarantee no touch interference
+       across all mobile browsers. transform+visibility still fails on
+       some Android WebViews and Samsung Internet. */
+    display: none !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
     width: min(280px, 85vw);
     z-index: 200;
-    /* Use visibility:hidden — most reliable way to remove from touch event flow
-       pointer-events:none alone is NOT honored on all Android/iOS browsers */
-    visibility: hidden;
-    pointer-events: none;
   }
 
   .sidebar.open {
-    transform: translateX(0);
+    display: flex !important;
+    flex-direction: column;
     box-shadow: 4px 0 32px rgba(0,0,0,0.18);
-    visibility: visible; /* Restore full interactivity when open */
-    pointer-events: auto;
   }
 
-  /* sidebar-overlay: do NOT force display:block here!
-     It must stay display:none until sidebar opens.
-     A display:block fixed element covering inset:0 blocks ALL touches
-     on content below z-index:99 — even with pointer-events:none.
-     The .active class handles showing it when needed. */
+  /* Overlay: stays display:none until .active is added */
+  .sidebar-overlay {
+    display: none;
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+  }
 
   .main-content {
     margin-left: 0;

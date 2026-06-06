@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mobile Debug</title>
+<style>
+body { font-family: sans-serif; padding: 20px; background: #111; color: #eee; }
+#log { font-family: monospace; font-size: 12px; white-space: pre-wrap; background: #222; padding: 10px; max-height: 60vh; overflow-y: auto; border-radius: 8px; }
+button { padding: 12px 24px; font-size: 16px; margin: 8px 4px; border-radius: 8px; border: none; cursor: pointer; }
+.test-btn { background: #E67E22; color: white; }
+h2 { color: #E67E22; }
+</style>
+</head>
+<body>
+<h2>🔍 Mobile Debug Tool</h2>
+<p>Tekan tombol di bawah. Jika tidak ada log muncul → ada element yang menghalangi.</p>
+
+<button class="test-btn" id="btn1" onclick="logClick('btn1')">Test Button 1</button>
+<button class="test-btn" id="btn2" ontouchstart="logTouch('btn2-touchstart')" onclick="logClick('btn2')">Test Button 2 (touch+click)</button>
+
+<hr>
+<h3>Element Coverage Check</h3>
+<button class="test-btn" onclick="checkCoverage()">🔎 Check What's On Top</button>
+<button class="test-btn" onclick="checkAllFixed()">📐 Find Fixed/Absolute Elements</button>
+
+<hr>
+<div id="log"></div>
+
+<script>
+const logEl = document.getElementById('log');
+function log(msg) {
+  const t = new Date().toLocaleTimeString();
+  logEl.textContent = `[${t}] ${msg}\n` + logEl.textContent;
+}
+
+function logClick(id) { log(`✅ CLICK: ${id}`); }
+function logTouch(id) { log(`👆 TOUCH: ${id}`); }
+
+function checkCoverage() {
+  // Check 20 points on the screen
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const points = [];
+  for (let y = 100; y < h - 100; y += 80) {
+    for (let x = 40; x < w - 40; x += 80) {
+      const el = document.elementFromPoint(x, y);
+      if (el) {
+        const tag = el.tagName;
+        const id = el.id ? '#'+el.id : '';
+        const cls = el.className ? '.'+el.className.split(' ').join('.') : '';
+        const rect = el.getBoundingClientRect();
+        points.push(`  (${x},${y}) → <${tag}${id}${cls}> size:${Math.round(rect.width)}x${Math.round(rect.height)}`);
+      }
+    }
+  }
+  log('📍 Elements at screen points:\n' + points.join('\n'));
+}
+
+function checkAllFixed() {
+  const all = document.querySelectorAll('*');
+  const results = [];
+  all.forEach(el => {
+    const style = getComputedStyle(el);
+    const pos = style.position;
+    if (pos === 'fixed' || pos === 'absolute') {
+      const rect = el.getBoundingClientRect();
+      const vis = style.visibility;
+      const disp = style.display;
+      const pe = style.pointerEvents;
+      const zi = style.zIndex;
+      const tag = el.tagName;
+      const id = el.id ? '#'+el.id : '';
+      const cls = el.className ? '.'+String(el.className).substring(0,40) : '';
+      if (rect.width > 0 && rect.height > 0) {
+        results.push(`  <${tag}${id}${cls}> pos:${pos} z:${zi} vis:${vis} disp:${disp} pe:${pe} rect:${Math.round(rect.left)},${Math.round(rect.top)} ${Math.round(rect.width)}x${Math.round(rect.height)}`);
+      }
+    }
+  });
+  log('📐 Fixed/Absolute elements with size > 0:\n' + results.join('\n'));
+}
+
+// Auto-check on load
+window.addEventListener('load', () => {
+  log('🚀 Debug page loaded. Screen: ' + window.innerWidth + 'x' + window.innerHeight);
+  log('📱 UA: ' + navigator.userAgent.substring(0, 80));
+});
+</script>
+</body>
+</html>
