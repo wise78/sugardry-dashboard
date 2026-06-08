@@ -1550,6 +1550,41 @@ function initTroubleshoot() {
     });
   }
 
+  // === Troubleshoot toggle buttons (data-ts-device) ===
+  $$('[data-ts-device]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const device = btn.dataset.tsDevice;
+      const turnOn = btn.dataset.tsState === 'on';
+      troubleshootToggle(device, turnOn);
+    });
+  });
+
+  // === Troubleshoot all toggle buttons (data-ts-all) ===
+  $$('[data-ts-all]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const turnOn = btn.dataset.tsAll === 'on';
+      troubleshootToggleAll(turnOn);
+    });
+  });
+
+  // === Troubleshoot quick action buttons (data-ts-action) ===
+  $$('[data-ts-action]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      troubleshootAction(btn.dataset.tsAction);
+    });
+  });
+
+  // === Batch complete modal buttons (data-bcm-action) ===
+  $$('[data-bcm-action]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      batchCompleteAction(btn.dataset.bcmAction);
+    });
+  });
+
   // Listen for troubleshoot response from ESP32
   if (typeof MQTTService !== 'undefined' && MQTTService.on) {
     MQTTService.on('oven/troubleshoot/response', (payload) => {
@@ -1597,6 +1632,7 @@ function initTroubleshoot() {
         }
         if (data.uptime) {
           const el = $('#tsDiag-uptime');
+
           if (el) el.textContent = data.uptime;
         }
         if (data.heap) {

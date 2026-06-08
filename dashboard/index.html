@@ -619,11 +619,11 @@
             <span class="ts-status-badge off" id="tsStatus-ssr1">OFF</span>
           </div>
           <div class="ts-control-actions">
-            <button class="btn btn-success ts-btn" id="tsOn-ssr1" onclick="troubleshootToggle('ssr1', true)">
+            <button class="btn btn-success ts-btn" id="tsOn-ssr1" data-ts-device="ssr1" data-ts-state="on">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
               ON
             </button>
-            <button class="btn btn-danger ts-btn" id="tsOff-ssr1" onclick="troubleshootToggle('ssr1', false)">
+            <button class="btn btn-danger ts-btn" id="tsOff-ssr1" data-ts-device="ssr1" data-ts-state="off">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
               OFF
             </button>
@@ -643,11 +643,11 @@
             <span class="ts-status-badge off" id="tsStatus-ssr2">OFF</span>
           </div>
           <div class="ts-control-actions">
-            <button class="btn btn-success ts-btn" onclick="troubleshootToggle('ssr2', true)">
+            <button class="btn btn-success ts-btn" data-ts-device="ssr2" data-ts-state="on">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
               ON
             </button>
-            <button class="btn btn-danger ts-btn" onclick="troubleshootToggle('ssr2', false)">
+            <button class="btn btn-danger ts-btn" data-ts-device="ssr2" data-ts-state="off">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
               OFF
             </button>
@@ -667,11 +667,11 @@
             <span class="ts-status-badge off" id="tsStatus-alarm">OFF</span>
           </div>
           <div class="ts-control-actions">
-            <button class="btn btn-success ts-btn" onclick="troubleshootToggle('alarm', true)">
+            <button class="btn btn-success ts-btn" data-ts-device="alarm" data-ts-state="on">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
               ON
             </button>
-            <button class="btn btn-danger ts-btn" onclick="troubleshootToggle('alarm', false)">
+            <button class="btn btn-danger ts-btn" data-ts-device="alarm" data-ts-state="off">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
               OFF
             </button>
@@ -691,11 +691,11 @@
             <span class="ts-status-badge off" id="tsStatus-all">OFF</span>
           </div>
           <div class="ts-control-actions">
-            <button class="btn btn-success ts-btn" onclick="troubleshootToggleAll(true)">
+            <button class="btn btn-success ts-btn" data-ts-all="on">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
               ALL ON
             </button>
-            <button class="btn btn-danger ts-btn" onclick="troubleshootToggleAll(false)">
+            <button class="btn btn-danger ts-btn" data-ts-all="off">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
               ALL OFF
             </button>
@@ -794,16 +794,16 @@
       <!-- Quick Actions -->
       <div class="ts-section-title">Aksi Cepat</div>
       <div class="ts-quick-actions">
-        <button class="btn btn-secondary ts-quick-btn" onclick="troubleshootAction('ping')">
+        <button class="btn btn-secondary ts-quick-btn" data-ts-action="ping">
           📡 Ping ESP32
         </button>
-        <button class="btn btn-secondary ts-quick-btn" onclick="troubleshootAction('restart')">
+        <button class="btn btn-secondary ts-quick-btn" data-ts-action="restart">
           🔄 Restart ESP32
         </button>
-        <button class="btn btn-secondary ts-quick-btn" onclick="troubleshootAction('read-sensors')">
+        <button class="btn btn-secondary ts-quick-btn" data-ts-action="read-sensors">
           🌡️ Baca Sensor
         </button>
-        <button class="btn btn-secondary ts-quick-btn" onclick="troubleshootAction('status')">
+        <button class="btn btn-secondary ts-quick-btn" data-ts-action="status">
           📋 Status Lengkap
         </button>
       </div>
@@ -856,26 +856,26 @@
     <p class="bcm-desc">Estimasi durasi batch <strong id="bcmBatchId">—</strong> telah tercapai.<br>Segera periksa produk dan lakukan langkah berikut:</p>
 
     <div class="bcm-actions">
-      <button class="bcm-btn bcm-btn-danger" id="bcmStopAlarm" onclick="batchCompleteAction('stop-alarm')">
+      <button class="bcm-btn bcm-btn-danger" id="bcmStopAlarm" data-bcm-action="stop-alarm">
         <span class="bcm-btn-icon">🔕</span>
         <span class="bcm-btn-text">Matikan Alarm</span>
         <span class="bcm-btn-hint">Hentikan bunyi sirine & browser</span>
       </button>
 
-      <button class="bcm-btn bcm-btn-warning" id="bcmStopBlower" onclick="batchCompleteAction('stop-blower')">
+      <button class="bcm-btn bcm-btn-warning" id="bcmStopBlower" data-bcm-action="stop-blower">
         <span class="bcm-btn-icon">🌀</span>
         <span class="bcm-btn-text">Matikan Blower</span>
         <span class="bcm-btn-hint">SSR #1 & SSR #2 → OFF</span>
       </button>
 
-      <button class="bcm-btn bcm-btn-primary" onclick="batchCompleteAction('go-post')">
+      <button class="bcm-btn bcm-btn-primary" data-bcm-action="go-post">
         <span class="bcm-btn-icon">📊</span>
         <span class="bcm-btn-text">Isi Post-Batch</span>
         <span class="bcm-btn-hint">Catat hasil akhir pengovenan</span>
       </button>
     </div>
 
-    <button class="bcm-dismiss" onclick="batchCompleteAction('dismiss')">Tutup & lanjutkan monitoring</button>
+    <button class="bcm-dismiss" data-bcm-action="dismiss">Tutup & lanjutkan monitoring</button>
 
     <div class="bcm-reminder">
       ⚠️ Jangan lupa matikan kompor secara manual!

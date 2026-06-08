@@ -1739,6 +1739,11 @@ tbody tr:last-child td {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
+  pointer-events: none;
+}
+
+.toast-container > * {
+  pointer-events: auto;
 }
 
 .toast {
@@ -1835,6 +1840,7 @@ tbody tr:last-child td {
   -webkit-backdrop-filter: blur(8px);
   opacity: 0;
   visibility: hidden;
+  pointer-events: none;
   transition: all 0.35s var(--ease-out);
   padding: var(--sp-6);
 }
@@ -1842,6 +1848,7 @@ tbody tr:last-child td {
 .bcm-overlay.active {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
 .bcm-card {
